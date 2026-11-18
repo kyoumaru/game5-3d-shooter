@@ -62,7 +62,6 @@ material_override = SubResource("StandardMaterial3D_0xm2m")
 mesh = SubResource("BoxMesh_khk4l")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Floor" unique_id=383598832]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6051123, 0.13215894, 1.1920929e-07)
 shape = SubResource("BoxShape3D_khk4l")
 
 [node name="WallSouth" type="StaticBody3D" parent="LevelGeometry" unique_id=1880185799]

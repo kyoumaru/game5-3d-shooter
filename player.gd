@@ -11,6 +11,9 @@ const AIM_RANGE := 200.0
 const WORLD_MASK := 1
 const ENEMY_MASK := 2
 const SHOULDER_X := 0.8
+const MIN_PITCH := deg_to_rad(-60.0)
+# Keep the fixed camera arc above the floor, including its near clipping plane.
+const MAX_PITCH := deg_to_rad(45.0)
 
 var pitch := 0.0
 var shoulder_side := 1.0
@@ -22,6 +25,7 @@ var shot_mat: StandardMaterial3D
 # Visual nodes linked from Player.tscn
 @onready var head: Node3D = $Head
 @onready var weapon: Node3D = $Gun
+@onready var weapon_shoulder_x := absf(weapon.position.x)
 @onready var muzzle: Marker3D = $Gun/Muzzle
 @onready var pivot: Node3D = $Camera
 @onready var cam: Camera3D = $Camera/Camera3D
@@ -40,7 +44,7 @@ func _mat(color: Color, unshaded := false) -> StandardMaterial3D:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * MOUSE_SENS)
-		pitch = clampf(pitch - event.relative.y * MOUSE_SENS, deg_to_rad(-60), deg_to_rad(60))
+		pitch = clampf(pitch - event.relative.y * MOUSE_SENS, MIN_PITCH, MAX_PITCH)
 		pivot.rotation.x = pitch
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
@@ -53,7 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	_move(delta)
 
-	cam.position.x = lerpf(cam.position.x, SHOULDER_X * shoulder_side, 8.0 * delta)
+	var shoulder_blend := clampf(8.0 * delta, 0.0, 1.0)
+	cam.position.x = lerpf(cam.position.x, SHOULDER_X * shoulder_side, shoulder_blend)
+	weapon.position.x = lerpf(weapon.position.x, weapon_shoulder_x * shoulder_side, shoulder_blend)
 
 	_update_aim()
 
@@ -113,6 +119,16 @@ func _look(n: Node3D, dir: Vector3) -> void:
 	n.look_at(n.global_position + dir, up)
 
 func _fire() -> void:
+	# The muzzle can extend through cover while the player's body stays outside.
+	var barrel_start := global_transform * Vector3(0.0, weapon.position.y, 0.0)
+	var q := PhysicsRayQueryParameters3D.create(
+		barrel_start, muzzle.global_position, WORLD_MASK | ENEMY_MASK, [get_rid()])
+	q.hit_from_inside = true
+	var obstruction := get_world_3d().direct_space_state.intersect_ray(q)
+	if not obstruction.is_empty():
+		_impact(obstruction)
+		return
+
 	var dir := _shot_dir(muzzle.global_position)
 	var node := Node3D.new()
 	get_tree().root.add_child(node) # Spawn in world root so shots don't move with player
@@ -155,13 +171,11 @@ func _update_shots(delta: float) -> void:
 		var to := from + dir * SHOT_SPEED * delta   
 		var q := PhysicsRayQueryParameters3D.create(
 			from, to, WORLD_MASK | ENEMY_MASK, [get_rid()])
+		q.hit_from_inside = true
 		var hit: Dictionary = space.intersect_ray(q)
 
 		if not hit.is_empty():
-			_explode(hit["position"], 0.4)
-			var c: Node = hit["collider"]
-			if c.has_meta("hp"):
-				_damage_enemy(c as Node3D)
+			_impact(hit)
 			node.queue_free()
 			shots.remove_at(i)
 		elif float(s["life"]) <= 0.0:
@@ -169,6 +183,12 @@ func _update_shots(delta: float) -> void:
 			shots.remove_at(i)
 		else:
 			node.global_position = to
+
+func _impact(hit: Dictionary) -> void:
+	_explode(hit["position"], 0.4)
+	var collider: Node = hit["collider"]
+	if collider.has_meta("hp"):
+		_damage_enemy(collider as Node3D)
 
 func _damage_enemy(e: Node3D) -> void:
 	var hp: int = int(e.get_meta("hp")) - 1
