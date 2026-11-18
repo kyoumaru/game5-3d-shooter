@@ -1,0 +1,86 @@
+[gd_scene format=3 uid="uid://btkri8qp8d8qg"]
+
+[ext_resource type="Script" uid="uid://co6nhllb7m7kv" path="res://player.gd" id="1_4flbx"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_khk4l"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gxhw4"]
+albedo_color = Color(0.48677072, 0.85430586, 0.58383155, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_khk4l"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2vcvo"]
+albedo_color = Color(0.3491902, 0.5847179, 0.3491902, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0y4ph"]
+size = Vector3(0.4, 0.2, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xxwc1"]
+albedo_color = Color(0.95281494, 0.8808251, 0.7977378, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_6e0h0"]
+radius = 0.22
+height = 0.44
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4flbx"]
+albedo_color = Color(0.79595864, 0.6651851, 0.58383155, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fekfe"]
+material = SubResource("StandardMaterial3D_4flbx")
+size = Vector3(0.08, 0.08, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b0l2i"]
+albedo_color = Color(0.42358288, 0.42358288, 0.42358288, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iuyoo"]
+size = Vector3(0.1, 0.12, 0.6)
+
+[node name="Node3D" type="CharacterBody3D" unique_id=1757040986]
+collision_layer = 8
+script = ExtResource("1_4flbx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1171876225]
+shape = SubResource("CapsuleShape3D_khk4l")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=807510880]
+material_override = SubResource("StandardMaterial3D_gxhw4")
+mesh = SubResource("CapsuleMesh_khk4l")
+
+[node name="ChestMesh" type="MeshInstance3D" parent="." unique_id=1703716954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.38)
+material_override = SubResource("StandardMaterial3D_2vcvo")
+mesh = SubResource("BoxMesh_0y4ph")
+
+[node name="Head" type="Node3D" parent="." unique_id=307476653]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Head" unique_id=1275896009]
+material_override = SubResource("StandardMaterial3D_xxwc1")
+mesh = SubResource("SphereMesh_6e0h0")
+
+[node name="NoseMesh" type="MeshInstance3D" parent="Head" unique_id=608626843]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.22)
+mesh = SubResource("BoxMesh_fekfe")
+
+[node name="Gun" type="Node3D" parent="." unique_id=691493181]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0.4, -0.3)
+
+[node name="GunMesh" type="MeshInstance3D" parent="Gun" unique_id=1111159314]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.3)
+material_override = SubResource("StandardMaterial3D_b0l2i")
+mesh = SubResource("BoxMesh_iuyoo")
+
+[node name="Muzzle" type="Marker3D" parent="Gun" unique_id=536778005]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.65)
+
+[node name="Camera" type="Node3D" parent="." unique_id=950782094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Camera" unique_id=1127705816]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.4, 3)
+current = true
+far = 500.0
